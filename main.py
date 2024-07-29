@@ -14,8 +14,8 @@ app.add_middleware(
     allow_headers=["*"],  # Headers permitidos
 )
 
-app.include_router(providers.routers)
-app.include_router(products.routers)
+app.include_router(providers.router)
+app.include_router(products.router)
 
 # Ruta raíz
 @app.get("/")

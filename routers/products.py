@@ -17,53 +17,28 @@ class Product(BaseModel):
     description: str
     provider_id: str
 
-# @router.get("/products")
-# def read_products():
-#     products = collection.find()
-#     products_list = []
-#     for product in products:
-#         product["id"] = str(product["_id"])  
-#         del product["_id"]  
-#         product["provider_id"] = str(product["provider_id"])  
-#         del product["provider_id"] 
-#         products_list.append(product)
-
-#     if not products_list:
-#         raise HTTPException(status_code=404, detail="No products found")
-    
-#     return products_list
 
 @router.get("/products")
 def read_products(
     limit: int = Query(10, gt=0, description="Number of products to return"),
     offset: int = Query(0, ge=0, description="Number of products to skip"),
-    name: str = Query(None, description="Filter by product name"),
-    min_price: float = Query(None, gt=0, description="Filter by minimum price"),
-    max_price: float = Query(None, gt=0, description="Filter by maximum price"),
-    provider_id: str = Query(None, description="Filter by provider ID")
+    name: str = Query(None, description="Filter by product name")
 ):
-   # Construir el filtro de consulta
+    # Construir el filtro de consulta
     query = {}
     if name:
-        query["name"] = {"$regex": name, "$options": "i"}  # Case-insensitive search
-    if min_price is not None:
-        query["price"] = {"$gte": min_price}
-    if max_price is not None:
-        if "price" in query:
-            query["price"]["$lte"] = max_price
-        else:
-            query["price"] = {"$lte": max_price}
-    if provider_id:
-        query["provider_id"] = ObjectId(provider_id)
+        query["name"] = {"$regex": name, "$options": "i"}  # Búsqueda insensible a mayúsculas/minúsculas
 
     # Aplicar filtros y parámetros de paginación
     products = collection.find(query).skip(offset).limit(limit)
     products_list = []
     for product in products:
+        # Convertir ObjectId a cadena para id y provider_id
         product["id"] = str(product["_id"])  
         del product["_id"]
-        product["provider_id"] = str(product["provider_id"])  
-        del product["provider_id"] 
+        if "provider_id" in product:
+            product["provider_id"] = str(product["provider_id"])
+        
         products_list.append(product)
 
     if not products_list:
@@ -83,7 +58,7 @@ def read_product(product_id: str):
     return product
 
 
-@router.post("/products/")
+@router.post("/products")
 def create_product(product: Product):
     provider = provider_collection.find_one({"_id": ObjectId(product.provider_id)})
     if provider is None:

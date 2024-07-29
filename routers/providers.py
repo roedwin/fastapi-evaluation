@@ -15,7 +15,7 @@ class Provider(BaseModel):
     phone: str
     description: str
 
-@router.get("/providers/")
+@router.get("/providers")
 def read_providers():
     providers = collection.find()
     providers_list = []
@@ -41,7 +41,7 @@ def read_provider(provider_id: str):
     return provider
 
 
-@router.post("/providers/")
+@router.post("/providers")
 def create_provider(provider: Provider):
     provider_dict = provider.dict()
     provider_dict["created_at"] = datetime.utcnow()

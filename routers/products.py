@@ -4,6 +4,7 @@ from pymongo.collection import Collection
 from bson.objectid import ObjectId
 from datetime import datetime
 from database import db
+from typing import List
 
 
 router = APIRouter()
@@ -73,10 +74,26 @@ def create_product(product: Product):
     result = collection.insert_one(product_dict)
 
     if not result.acknowledged:
-        raise HTTPException(status_code=500, detail="Provider could not be created")
+        raise HTTPException(status_code=500, detail="Product could not be created")
     
     
     return {"id": str(result.inserted_id)}
+
+@router.post("/products/multiple")
+def create_products(products: List[Product]):
+    products_dict = []
+    for product in products:
+        product_dict = product.dict()
+        product_dict["created_at"] = datetime.utcnow()
+        product_dict["updated_at"] = datetime.utcnow()
+        products_dict.append(product_dict)
+
+    result = collection.insert_many(products_dict)
+
+    if not result.acknowledged:
+        raise HTTPException(status_code=500, detail="Providers could not be created")
+
+    return {"ids": [str(inserted_id) for inserted_id in result.inserted_ids]}
 
 
 @router.put("/products/{product_id}")

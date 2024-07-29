@@ -17,6 +17,11 @@ app.add_middleware(
 app.include_router(providers.router)
 app.include_router(products.router)
 
+# Ruta raíz
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to my FastAPI application!"}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
